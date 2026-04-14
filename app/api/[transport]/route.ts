@@ -1,6 +1,5 @@
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
-import { NextRequest } from "next/server";
 import {
   proxmoxRequest,
   getDefaultNode,
@@ -9,7 +8,6 @@ import {
   jsonContent,
   textContent,
 } from "@/lib/proxmox-client";
-import { verifyApiKey, unauthorizedResponse } from "@/lib/auth";
 
 // ---------------------------------------------------------------------------
 // MCP Handler
@@ -1222,27 +1220,9 @@ const handler = createMcpHandler(
 );
 
 // ---------------------------------------------------------------------------
-// Route handler with API key auth
+// Route handler — auth disabled for Claude.ai compatibility
+// Claude.ai does not send custom Authorization headers when connecting to MCP.
+// Security is provided by the Proxmox API token (PVEAPIToken).
 // ---------------------------------------------------------------------------
 
-async function withAuth(
-  request: NextRequest,
-  handlerFn: (req: NextRequest) => Promise<Response>
-): Promise<Response> {
-  if (!verifyApiKey(request)) {
-    return unauthorizedResponse();
-  }
-  return handlerFn(request);
-}
-
-export async function GET(request: NextRequest) {
-  return withAuth(request, handler as unknown as (req: NextRequest) => Promise<Response>);
-}
-
-export async function POST(request: NextRequest) {
-  return withAuth(request, handler as unknown as (req: NextRequest) => Promise<Response>);
-}
-
-export async function DELETE(request: NextRequest) {
-  return withAuth(request, handler as unknown as (req: NextRequest) => Promise<Response>);
-}
+export { handler as GET, handler as POST, handler as DELETE };
