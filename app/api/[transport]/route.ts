@@ -30,7 +30,7 @@ const mcpHandler = createMcpHandler(
       description: "クラスタ内の全リソース（VM, LXC, Storage, Node）を一覧取得する。type で絞り込み可能。",
       inputSchema: { type: z.enum(["vm", "storage", "node", "sdn"]).optional().describe("リソースタイプで絞り込み") },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ type }) => jsonContent(await proxmoxRequest(type ? \`cluster/resources?type=\${type}\` : "cluster/resources")));
+    }, async ({ type }) => jsonContent(await proxmoxRequest(type ? `cluster/resources?type=${type}` : "cluster/resources")));
 
     // =================================================================
     // NODES
@@ -44,8 +44,8 @@ const mcpHandler = createMcpHandler(
       const nodes = await proxmoxRequest<Array<{ node: string; status: string; cpu: number; maxcpu: number; mem: number; maxmem: number; uptime: number }>>("nodes");
       return jsonContent(nodes.map((n) => ({
         node: n.node, status: n.status,
-        cpu: \`\${(n.cpu * 100).toFixed(1)}% (\${n.maxcpu} cores)\`,
-        memory: \`\${formatBytes(n.mem)} / \${formatBytes(n.maxmem)} (\${((n.mem / n.maxmem) * 100).toFixed(1)}%)\`,
+        cpu: `${(n.cpu * 100).toFixed(1)}% (${n.maxcpu} cores)`,
+        memory: `${formatBytes(n.mem)} / ${formatBytes(n.maxmem)} (${((n.mem / n.maxmem) * 100).toFixed(1)}%)`,
         uptime: formatUptime(n.uptime),
       })));
     });
@@ -55,7 +55,7 @@ const mcpHandler = createMcpHandler(
       description: "指定ノードの詳細ステータスを取得する。CPU・メモリ・ディスク・カーネルバージョン等。",
       inputSchema: { node: z.string().optional().describe("ノード名 (省略時はデフォルトノード)") },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node }) => jsonContent(await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/status\`)));
+    }, async ({ node }) => jsonContent(await proxmoxRequest(`nodes/${node || getDefaultNode()}/status`)));
 
     // =================================================================
     // QEMU VMs
@@ -65,35 +65,35 @@ const mcpHandler = createMcpHandler(
       description: "指定ノード上の全 QEMU VM を一覧取得する。",
       inputSchema: { node: z.string().optional().describe("ノード名") },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node }) => jsonContent(await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/qemu\`)));
+    }, async ({ node }) => jsonContent(await proxmoxRequest(`nodes/${node || getDefaultNode()}/qemu`)));
 
     server.registerTool("proxmox_vm_status", {
       title: "VMステータス",
       description: "指定 QEMU VM の現在のステータスを取得する。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int().describe("VM ID") },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, vmid }) => jsonContent(await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/qemu/\${vmid}/status/current\`)));
+    }, async ({ node, vmid }) => jsonContent(await proxmoxRequest(`nodes/${node || getDefaultNode()}/qemu/${vmid}/status/current`)));
 
     server.registerTool("proxmox_vm_config", {
       title: "VM設定取得",
       description: "指定 QEMU VM の設定（CPU, メモリ, ディスク, ネットワーク等）を取得する。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int().describe("VM ID") },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, vmid }) => jsonContent(await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/qemu/\${vmid}/config\`)));
+    }, async ({ node, vmid }) => jsonContent(await proxmoxRequest(`nodes/${node || getDefaultNode()}/qemu/${vmid}/config`)));
 
     server.registerTool("proxmox_vm_start", {
       title: "VM起動",
       description: "指定 QEMU VM を起動する。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int() },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, vmid }) => textContent(\`VM \${vmid} 起動タスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/qemu/\${vmid}/status/start\`, "POST")}\`));
+    }, async ({ node, vmid }) => textContent(`VM ${vmid} 起動タスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/qemu/${vmid}/status/start`, "POST")}`));
 
     server.registerTool("proxmox_vm_stop", {
       title: "VM停止",
       description: "指定 QEMU VM を強制停止する。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int() },
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, vmid }) => textContent(\`VM \${vmid} 停止タスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/qemu/\${vmid}/status/stop\`, "POST")}\`));
+    }, async ({ node, vmid }) => textContent(`VM ${vmid} 停止タスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/qemu/${vmid}/status/stop`, "POST")}`));
 
     server.registerTool("proxmox_vm_shutdown", {
       title: "VMシャットダウン",
@@ -102,7 +102,7 @@ const mcpHandler = createMcpHandler(
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     }, async ({ node, vmid, timeout }) => {
       const body: Record<string, unknown> = {}; if (timeout !== undefined) body.timeout = timeout;
-      return textContent(\`VM \${vmid} シャットダウンタスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/qemu/\${vmid}/status/shutdown\`, "POST", body)}\`);
+      return textContent(`VM ${vmid} シャットダウンタスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/qemu/${vmid}/status/shutdown`, "POST", body)}`);
     });
 
     server.registerTool("proxmox_vm_reboot", {
@@ -110,7 +110,7 @@ const mcpHandler = createMcpHandler(
       description: "指定 QEMU VM を再起動する。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int() },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, vmid }) => textContent(\`VM \${vmid} 再起動タスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/qemu/\${vmid}/status/reboot\`, "POST")}\`));
+    }, async ({ node, vmid }) => textContent(`VM ${vmid} 再起動タスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/qemu/${vmid}/status/reboot`, "POST")}`));
 
     // =================================================================
     // LXC CONTAINERS
@@ -120,35 +120,35 @@ const mcpHandler = createMcpHandler(
       description: "指定ノード上の全 LXC コンテナを一覧取得する。",
       inputSchema: { node: z.string().optional() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node }) => jsonContent(await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/lxc\`)));
+    }, async ({ node }) => jsonContent(await proxmoxRequest(`nodes/${node || getDefaultNode()}/lxc`)));
 
     server.registerTool("proxmox_container_status", {
       title: "コンテナステータス",
       description: "指定 LXC コンテナの現在のステータスを取得する。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int().describe("コンテナ ID") },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, vmid }) => jsonContent(await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/lxc/\${vmid}/status/current\`)));
+    }, async ({ node, vmid }) => jsonContent(await proxmoxRequest(`nodes/${node || getDefaultNode()}/lxc/${vmid}/status/current`)));
 
     server.registerTool("proxmox_container_config", {
       title: "コンテナ設定取得",
       description: "指定 LXC コンテナの設定を取得する。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, vmid }) => jsonContent(await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/lxc/\${vmid}/config\`)));
+    }, async ({ node, vmid }) => jsonContent(await proxmoxRequest(`nodes/${node || getDefaultNode()}/lxc/${vmid}/config`)));
 
     server.registerTool("proxmox_container_start", {
       title: "コンテナ起動",
       description: "指定 LXC コンテナを起動する。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int() },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, vmid }) => textContent(\`コンテナ \${vmid} 起動タスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/lxc/\${vmid}/status/start\`, "POST")}\`));
+    }, async ({ node, vmid }) => textContent(`コンテナ ${vmid} 起動タスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/lxc/${vmid}/status/start`, "POST")}`));
 
     server.registerTool("proxmox_container_stop", {
       title: "コンテナ停止",
       description: "指定 LXC コンテナを強制停止する。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int() },
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, vmid }) => textContent(\`コンテナ \${vmid} 停止タスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/lxc/\${vmid}/status/stop\`, "POST")}\`));
+    }, async ({ node, vmid }) => textContent(`コンテナ ${vmid} 停止タスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/lxc/${vmid}/status/stop`, "POST")}`));
 
     server.registerTool("proxmox_container_shutdown", {
       title: "コンテナシャットダウン",
@@ -157,7 +157,7 @@ const mcpHandler = createMcpHandler(
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     }, async ({ node, vmid, timeout }) => {
       const body: Record<string, unknown> = {}; if (timeout !== undefined) body.timeout = timeout;
-      return textContent(\`コンテナ \${vmid} シャットダウンタスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/lxc/\${vmid}/status/shutdown\`, "POST", body)}\`);
+      return textContent(`コンテナ ${vmid} シャットダウンタスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/lxc/${vmid}/status/shutdown`, "POST", body)}`);
     });
 
     server.registerTool("proxmox_container_reboot", {
@@ -165,7 +165,7 @@ const mcpHandler = createMcpHandler(
       description: "指定 LXC コンテナを再起動する。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int() },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, vmid }) => textContent(\`コンテナ \${vmid} 再起動タスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/lxc/\${vmid}/status/reboot\`, "POST")}\`));
+    }, async ({ node, vmid }) => textContent(`コンテナ ${vmid} 再起動タスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/lxc/${vmid}/status/reboot`, "POST")}`));
 
     server.registerTool("proxmox_create_container", {
       title: "コンテナ作成",
@@ -188,7 +188,7 @@ const mcpHandler = createMcpHandler(
       if (storage) body.storage = storage;
       if (unprivileged !== undefined) body.unprivileged = unprivileged ? 1 : 0;
       if (startFlag !== undefined) body.start = startFlag ? 1 : 0;
-      return textContent(\`コンテナ \${vmid} 作成タスク発行: \${await proxmoxRequest(\`nodes/\${n}/lxc\`, "POST", body)}\`);
+      return textContent(`コンテナ ${vmid} 作成タスク発行: ${await proxmoxRequest(`nodes/${n}/lxc`, "POST", body)}`);
     });
 
     server.registerTool("proxmox_clone_container", {
@@ -203,7 +203,7 @@ const mcpHandler = createMcpHandler(
       const body: Record<string, unknown> = { newid };
       if (hostname) body.hostname = hostname; if (full !== undefined) body.full = full ? 1 : 0;
       if (storage) body.storage = storage; if (description) body.description = description;
-      return textContent(\`コンテナ \${vmid} → \${newid} クローンタスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/lxc/\${vmid}/clone\`, "POST", body)}\`);
+      return textContent(`コンテナ ${vmid} → ${newid} クローンタスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/lxc/${vmid}/clone`, "POST", body)}`);
     });
 
     server.registerTool("proxmox_delete_container", {
@@ -217,7 +217,7 @@ const mcpHandler = createMcpHandler(
     }, async ({ node, vmid, confirm, purge, force }) => {
       if (!confirm) return textContent("エラー: confirm=true を指定してください。この操作はコンテナを完全に削除します。");
       const body: Record<string, unknown> = {}; if (purge) body.purge = 1; if (force) body.force = 1;
-      return textContent(\`コンテナ \${vmid} 削除タスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/lxc/\${vmid}\`, "DELETE", body)}\`);
+      return textContent(`コンテナ ${vmid} 削除タスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/lxc/${vmid}`, "DELETE", body)}`);
     });
 
     server.registerTool("proxmox_update_container_config", {
@@ -235,8 +235,8 @@ const mcpHandler = createMcpHandler(
       if (cores !== undefined) body.cores = cores; if (hostname) body.hostname = hostname;
       if (description !== undefined) body.description = description; if (net0) body.net0 = net0;
       if (onboot !== undefined) body.onboot = onboot ? 1 : 0; if (startup) body.startup = startup;
-      await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/lxc/\${vmid}/config\`, "PUT", body);
-      return textContent(\`コンテナ \${vmid} 設定更新完了\`);
+      await proxmoxRequest(`nodes/${node || getDefaultNode()}/lxc/${vmid}/config`, "PUT", body);
+      return textContent(`コンテナ ${vmid} 設定更新完了`);
     });
 
     // =================================================================
@@ -249,7 +249,7 @@ const mcpHandler = createMcpHandler(
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     }, async ({ node, content }) => {
       const n = node || getDefaultNode();
-      return jsonContent(await proxmoxRequest(content ? \`nodes/\${n}/storage?content=\${content}\` : \`nodes/\${n}/storage\`));
+      return jsonContent(await proxmoxRequest(content ? `nodes/${n}/storage?content=${content}` : `nodes/${n}/storage`));
     });
 
     server.registerTool("proxmox_storage_content", {
@@ -259,7 +259,7 @@ const mcpHandler = createMcpHandler(
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     }, async ({ node, storage, content }) => {
       const n = node || getDefaultNode();
-      return jsonContent(await proxmoxRequest(content ? \`nodes/\${n}/storage/\${storage}/content?content=\${content}\` : \`nodes/\${n}/storage/\${storage}/content\`));
+      return jsonContent(await proxmoxRequest(content ? `nodes/${n}/storage/${storage}/content?content=${content}` : `nodes/${n}/storage/${storage}/content`));
     });
 
     // =================================================================
@@ -270,7 +270,7 @@ const mcpHandler = createMcpHandler(
       description: "指定 VM/コンテナのスナップショットを一覧取得する。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int(), type: z.enum(["qemu", "lxc"]) },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, vmid, type }) => jsonContent(await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/\${type}/\${vmid}/snapshot\`)));
+    }, async ({ node, vmid, type }) => jsonContent(await proxmoxRequest(`nodes/${node || getDefaultNode()}/${type}/${vmid}/snapshot`)));
 
     server.registerTool("proxmox_create_snapshot", {
       title: "スナップショット作成",
@@ -279,7 +279,7 @@ const mcpHandler = createMcpHandler(
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     }, async ({ node, vmid, type, snapname, description }) => {
       const body: Record<string, unknown> = { snapname }; if (description) body.description = description;
-      return textContent(\`スナップショット "\${snapname}" 作成タスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/\${type}/\${vmid}/snapshot\`, "POST", body)}\`);
+      return textContent(`スナップショット "${snapname}" 作成タスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/${type}/${vmid}/snapshot`, "POST", body)}`);
     });
 
     server.registerTool("proxmox_rollback_snapshot", {
@@ -287,14 +287,14 @@ const mcpHandler = createMcpHandler(
       description: "指定スナップショットにロールバックする。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int(), type: z.enum(["qemu", "lxc"]), snapname: z.string() },
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, vmid, type, snapname }) => textContent(\`スナップショット "\${snapname}" ロールバックタスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/\${type}/\${vmid}/snapshot/\${snapname}/rollback\`, "POST")}\`));
+    }, async ({ node, vmid, type, snapname }) => textContent(`スナップショット "${snapname}" ロールバックタスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/${type}/${vmid}/snapshot/${snapname}/rollback`, "POST")}`));
 
     server.registerTool("proxmox_delete_snapshot", {
       title: "スナップショット削除",
       description: "指定スナップショットを削除する。",
       inputSchema: { node: z.string().optional(), vmid: z.number().int(), type: z.enum(["qemu", "lxc"]), snapname: z.string() },
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
-    }, async ({ node, vmid, type, snapname }) => textContent(\`スナップショット "\${snapname}" 削除タスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/\${type}/\${vmid}/snapshot/\${snapname}\`, "DELETE")}\`));
+    }, async ({ node, vmid, type, snapname }) => textContent(`スナップショット "${snapname}" 削除タスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/${type}/${vmid}/snapshot/${snapname}`, "DELETE")}`));
 
     // =================================================================
     // TASKS
@@ -307,7 +307,7 @@ const mcpHandler = createMcpHandler(
     }, async ({ node, limit, vmid }) => {
       const p = new URLSearchParams(); if (limit) p.append("limit", String(limit)); if (vmid) p.append("vmid", String(vmid));
       const qs = p.toString(); const n = node || getDefaultNode();
-      return jsonContent(await proxmoxRequest(qs ? \`nodes/\${n}/tasks?\${qs}\` : \`nodes/\${n}/tasks\`));
+      return jsonContent(await proxmoxRequest(qs ? `nodes/${n}/tasks?${qs}` : `nodes/${n}/tasks`));
     });
 
     server.registerTool("proxmox_task_status", {
@@ -315,7 +315,7 @@ const mcpHandler = createMcpHandler(
       description: "指定タスク (UPID) の詳細ステータスを取得する。",
       inputSchema: { node: z.string().optional(), upid: z.string() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, upid }) => jsonContent(await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/tasks/\${encodeURIComponent(upid)}/status\`)));
+    }, async ({ node, upid }) => jsonContent(await proxmoxRequest(`nodes/${node || getDefaultNode()}/tasks/${encodeURIComponent(upid)}/status`)));
 
     server.registerTool("proxmox_task_log", {
       title: "タスクログ",
@@ -324,7 +324,7 @@ const mcpHandler = createMcpHandler(
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     }, async ({ node, upid, limit }) => {
       const p = new URLSearchParams(); if (limit) p.append("limit", String(limit)); const qs = p.toString();
-      const path = qs ? \`nodes/\${node || getDefaultNode()}/tasks/\${encodeURIComponent(upid)}/log?\${qs}\` : \`nodes/\${node || getDefaultNode()}/tasks/\${encodeURIComponent(upid)}/log\`;
+      const path = qs ? `nodes/${node || getDefaultNode()}/tasks/${encodeURIComponent(upid)}/log?${qs}` : `nodes/${node || getDefaultNode()}/tasks/${encodeURIComponent(upid)}/log`;
       const data = await proxmoxRequest<Array<{ n: number; t: string }>>(path);
       return textContent(data.map((l) => l.t).join("\n"));
     });
@@ -339,7 +339,7 @@ const mcpHandler = createMcpHandler(
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     }, async ({ node, type }) => {
       const n = node || getDefaultNode();
-      return jsonContent(await proxmoxRequest(type ? \`nodes/\${n}/network?type=\${type}\` : \`nodes/\${n}/network\`));
+      return jsonContent(await proxmoxRequest(type ? `nodes/${n}/network?type=${type}` : `nodes/${n}/network`));
     });
 
     server.registerTool("proxmox_list_templates", {
@@ -347,14 +347,14 @@ const mcpHandler = createMcpHandler(
       description: "利用可能な OS テンプレート一覧を取得する。",
       inputSchema: { node: z.string().optional(), storage: z.string().optional() },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-    }, async ({ node, storage }) => jsonContent(await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/storage/\${storage || "local"}/content?content=vztmpl\`)));
+    }, async ({ node, storage }) => jsonContent(await proxmoxRequest(`nodes/${node || getDefaultNode()}/storage/${storage || "local"}/content?content=vztmpl`)));
 
     server.registerTool("proxmox_download_template", {
       title: "テンプレートダウンロード",
       description: "Proxmox の公式リポジトリからテンプレートをダウンロードする。",
       inputSchema: { node: z.string().optional(), storage: z.string().optional(), template: z.string() },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
-    }, async ({ node, storage, template }) => textContent(\`テンプレート "\${template}" ダウンロードタスク発行: \${await proxmoxRequest(\`nodes/\${node || getDefaultNode()}/aplinfo\`, "POST", { storage: storage || "local", template })}\`));
+    }, async ({ node, storage, template }) => textContent(`テンプレート "${template}" ダウンロードタスク発行: ${await proxmoxRequest(`nodes/${node || getDefaultNode()}/aplinfo`, "POST", { storage: storage || "local", template })}`));
 
     server.registerTool("proxmox_api_request", {
       title: "汎用APIリクエスト",
