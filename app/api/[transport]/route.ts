@@ -379,7 +379,8 @@ function extractBearerToken(request: Request): string | undefined {
 
 function extractQueryKey(request: Request): string | undefined {
   try {
-    return new URL(request.url).searchParams.get("key") || undefined;
+    const u = new URL(request.url);
+    return u.searchParams.get("key") || u.searchParams.get("api_key") || undefined;
   } catch { return undefined; }
 }
 
