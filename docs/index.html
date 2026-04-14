@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proxmox MCP Server — 35ツール搭載のインフラ自動化AI基盤</title>
+<meta name="description" content="AIでProxmoxクラスタを完全リモート操作する。35のMCPツールでVM・コンテナ・ストレージ・スナップショットを自然言語で管理。">
+<meta name="author" content="Daisuke Hori">
+<meta property="og:title" content="Proxmox MCP Server — 35 Tools">
+<meta property="og:description" content="AIでProxmox VEを完全リモート操作。35ツールMCPサーバー。">
+<meta property="og:url" content="https://daisukehori.github.io/proxmox-mcp-server">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231A2332'/><text x='16' y='22' text-anchor='middle' font-size='18' fill='%2300B4D8'>⬡</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="px-nav"><div class="px-nav__inner">
+  <a href="#" class="px-nav__brand">⬡ Proxmox MCP</a>
+  <ul class="px-nav__links">
+    <li><a href="#features" class="active">機能</a></li>
+    <li><a href="#tools">ツール</a></li>
+    <li><a href="#quickstart">始め方</a></li>
+    <li><a href="#security">セキュリティ</a></li>
+    <li><a href="https://github.com/DaisukeHori/proxmox-mcp-server" target="_blank">GitHub</a></li>
+  </ul>
+  <span class="px-badge"><span class="px-badge__dot"></span> 4 Nodes Online</span>
+</div></nav>
+
+<!-- Hero -->
+<section class="px-hero">
+  <div class="px-hero__inner px-fade" id="hero-fade">
+    <div class="px-hero__tag"><span class="px-hero__tag-icon">⚡</span>35 MCP Tools / Vercel + Cloudflare Tunnel</div>
+    <h1>AIで<span>Proxmox</span>クラスタを<br>完全リモート操作する</h1>
+    <p class="px-hero__sub">VM・コンテナ・ストレージ・スナップショット。Proxmox VEの全操作をAIとの会話で完結。Vercelにデプロイし、Cloudflare Tunnel経由でローカルクラスタに接続。</p>
+    <div class="px-hero__endpoint">
+      <span style="color:rgba(255,255,255,0.4);font-size:12px">ENDPOINT</span>
+      <span>https://proxmox-mcp-server.vercel.app/api/mcp</span>
+      <button class="px-btn px-btn--dark" onclick="copyText('https://proxmox-mcp-server.vercel.app/api/mcp',this)">コピー</button>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="px-divider"></div>
+<div class="px-stats">
+  <div class="px-stat"><div class="px-stat__number">35</div><div class="px-stat__label">MCP Tools</div></div>
+  <div class="px-stat"><div class="px-stat__number">583</div><div class="px-stat__label">テスト (全パス)</div></div>
+  <div class="px-stat"><div class="px-stat__number">2層</div><div class="px-stat__label">認証セキュリティ</div></div>
+  <div class="px-stat"><div class="px-stat__number">4</div><div class="px-stat__label">対応クライアント</div></div>
+</div>
+<div class="px-divider"></div>
+
+<!-- Features -->
+<section class="px-section" id="features">
+  <div class="px-section__label">⬡ FEATURES</div>
+  <h2 class="px-section__title">なにができるのか</h2>
+  <p class="px-section__desc">「コンテナ3台作って」「スナップショット撮って」「メモリ逼迫してるノードどこ？」— インフラ操作をAIに任せる。</p>
+  <div class="px-grid">
+    <div class="px-card">
+      <div class="px-card__icon px-card__icon--teal">🖥️</div>
+      <h4>VM &amp; コンテナ管理</h4>
+      <p>QEMU VM 7ツール + LXC 11ツール。作成・クローン・起動・停止・設定変更・削除まで全ライフサイクルをカバー。テンプレートからの一括デプロイも会話で完結。</p>
+    </div>
+    <div class="px-card">
+      <div class="px-card__icon px-card__icon--orange">📸</div>
+      <h4>スナップショット &amp; ロールバック</h4>
+      <p>VM/コンテナ問わずスナップショットの作成・一覧・ロールバック・削除。「アップデート前にスナップ撮って」→「問題あったから戻して」を自然言語で。</p>
+    </div>
+    <div class="px-card">
+      <div class="px-card__icon px-card__icon--green">📊</div>
+      <h4>クラスタ監視 &amp; タスク追跡</h4>
+      <p>ノードのCPU/メモリ/ディスク状態をリアルタイム取得。非同期タスク（作成・クローン・バックアップ）のUPIDを追跡してログを確認。</p>
+    </div>
+    <div class="px-card">
+      <div class="px-card__icon px-card__icon--teal">🔌</div>
+      <h4>汎用APIアクセス</h4>
+      <p><code>proxmox_api_request</code> で35ツールでカバーされない任意のAPIエンドポイントにアクセス。QEMUエージェント・ファイアウォール・Ceph管理も。</p>
+    </div>
+    <div class="px-card">
+      <div class="px-card__icon px-card__icon--orange">☁️</div>
+      <h4>Cloudflare Tunnel統合</h4>
+      <p>ポート開放不要。Cloudflare Tunnelでローカルクラスタを安全にインターネット公開。自己署名証明書にも対応（noTLSVerify）。</p>
+    </div>
+    <div class="px-card">
+      <div class="px-card__icon px-card__icon--green">🔐</div>
+      <h4>2層セキュリティ</h4>
+      <p>MCPレイヤーでAPIキー認証 + ProxmoxレイヤーでPVE APIトークン認証。ステートレスでトークン保存なし。全通信TLS暗号化。</p>
+    </div>
+  </div>
+</section>
+
+<div class="px-divider"></div>
+
+<!-- Architecture -->
+<section class="px-section">
+  <div class="px-section__label">⬡ ARCHITECTURE</div>
+  <h2 class="px-section__title">アーキテクチャ</h2>
+  <p class="px-section__desc">MCPクライアント → Vercel → Cloudflare Tunnel → Proxmox VE。完全リモートでローカルクラスタを操作。</p>
+  <div class="px-arch"><pre>
+  <span class="hl">Claude.ai / Desktop / Cursor</span>
+          │
+          │ MCP (Streamable HTTP / SSE)
+          │ <span class="hl2">?key=&lt;MCP_API_KEY&gt;</span>
+          ▼
+  <span class="hl">Vercel</span> (proxmox-mcp-server)
+  Next.js + mcp-handler / 35 Tools
+          │
+          │ HTTPS (<span class="hl2">PVEAPIToken</span>)
+          ▼
+  <span class="hl">Cloudflare Tunnel</span>
+  vm.appserver.tokyo → 192.168.70.226:8006
+          │
+          │ LAN
+          ▼
+  <span class="hl">Proxmox VE Cluster</span>
+  4 Nodes / 60 Cores / 501 GiB RAM
+  </pre></div>
+</section>
+
+<div class="px-divider"></div>
+
+<!-- Tools -->
+<section class="px-section" id="tools">
+  <div class="px-section__label">⬡ 35 TOOLS</div>
+  <h2 class="px-section__title">ツール一覧</h2>
+  <p class="px-section__desc">Proxmox VE APIの主要操作を35ツールでカバー。全ツールにReadOnly/Destructiveアノテーション付き。</p>
+
+  <h4 style="margin:24px 0 8px;font-size:15px;color:var(--px-teal)">クラスタ &amp; ノード (4)</h4>
+  <table class="px-tools"><thead><tr><th>ツール</th><th>説明</th><th>R/W</th></tr></thead><tbody>
+  <tr><td><code>cluster_status</code></td><td>クラスタ全体のステータス・クォーラム</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>cluster_resources</code></td><td>全リソース一覧（VM/CT/Storage/Node）</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>list_nodes</code></td><td>全ノード（CPU%/メモリ/稼働時間）</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>node_status</code></td><td>ノード詳細（カーネル/CPU/ディスク）</td><td><span class="rw rw--r">R</span></td></tr>
+  </tbody></table>
+
+  <h4 style="margin:24px 0 8px;font-size:15px;color:var(--px-teal)">QEMU VM (7)</h4>
+  <table class="px-tools"><thead><tr><th>ツール</th><th>説明</th><th>R/W</th></tr></thead><tbody>
+  <tr><td><code>list_vms</code></td><td>VM一覧</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>vm_status</code></td><td>リアルタイムステータス</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>vm_config</code></td><td>CPU/メモリ/ディスク/NIC設定</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>vm_start</code></td><td>VM起動</td><td><span class="rw rw--w">W</span></td></tr>
+  <tr><td><code>vm_stop</code></td><td>強制停止（電源断）</td><td><span class="rw rw--d">⚠️</span></td></tr>
+  <tr><td><code>vm_shutdown</code></td><td>グレースフルシャットダウン</td><td><span class="rw rw--w">W</span></td></tr>
+  <tr><td><code>vm_reboot</code></td><td>再起動</td><td><span class="rw rw--w">W</span></td></tr>
+  </tbody></table>
+
+  <h4 style="margin:24px 0 8px;font-size:15px;color:var(--px-teal)">LXCコンテナ (11)</h4>
+  <table class="px-tools"><thead><tr><th>ツール</th><th>説明</th><th>R/W</th></tr></thead><tbody>
+  <tr><td><code>list_containers</code></td><td>コンテナ一覧</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>container_status</code></td><td>リアルタイムステータス</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>container_config</code></td><td>設定取得</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>container_start</code></td><td>起動</td><td><span class="rw rw--w">W</span></td></tr>
+  <tr><td><code>container_stop</code></td><td>強制停止</td><td><span class="rw rw--d">⚠️</span></td></tr>
+  <tr><td><code>container_shutdown</code></td><td>グレースフルシャットダウン</td><td><span class="rw rw--w">W</span></td></tr>
+  <tr><td><code>container_reboot</code></td><td>再起動</td><td><span class="rw rw--w">W</span></td></tr>
+  <tr><td><code>create_container</code></td><td>新規作成（テンプレート指定）</td><td><span class="rw rw--w">W</span></td></tr>
+  <tr><td><code>clone_container</code></td><td>クローン</td><td><span class="rw rw--w">W</span></td></tr>
+  <tr><td><code>delete_container</code></td><td>削除（confirm必須）</td><td><span class="rw rw--d">⚠️</span></td></tr>
+  <tr><td><code>update_container_config</code></td><td>設定変更</td><td><span class="rw rw--w">W</span></td></tr>
+  </tbody></table>
+
+  <h4 style="margin:24px 0 8px;font-size:15px;color:var(--px-teal)">ストレージ / スナップショット / タスク / その他 (13)</h4>
+  <table class="px-tools"><thead><tr><th>ツール</th><th>説明</th><th>R/W</th></tr></thead><tbody>
+  <tr><td><code>list_storages</code></td><td>ストレージ一覧</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>storage_content</code></td><td>ISO/テンプレート/バックアップ一覧</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>list_snapshots</code></td><td>スナップショット一覧</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>create_snapshot</code></td><td>スナップショット作成</td><td><span class="rw rw--w">W</span></td></tr>
+  <tr><td><code>rollback_snapshot</code></td><td>ロールバック</td><td><span class="rw rw--d">⚠️</span></td></tr>
+  <tr><td><code>delete_snapshot</code></td><td>スナップショット削除</td><td><span class="rw rw--d">⚠️</span></td></tr>
+  <tr><td><code>list_tasks</code></td><td>タスク一覧</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>task_status</code></td><td>タスクステータス</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>task_log</code></td><td>タスクログ</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>list_networks</code></td><td>ネットワーク一覧</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>list_templates</code></td><td>OSテンプレート一覧</td><td><span class="rw rw--r">R</span></td></tr>
+  <tr><td><code>download_template</code></td><td>テンプレートDL</td><td><span class="rw rw--w">W</span></td></tr>
+  <tr><td><code>api_request</code></td><td>汎用API（任意のエンドポイント）</td><td><span class="rw rw--w">R/W</span></td></tr>
+  </tbody></table>
+</section>
+
+<div class="px-divider"></div>
+
+<!-- Quick Start -->
+<section class="px-section" id="quickstart">
+  <div class="px-section__label">⬡ QUICK START</div>
+  <h2 class="px-section__title">3ステップで接続</h2>
+
+  <div class="px-grid" style="margin-top:24px">
+    <div class="px-card" style="border-top:3px solid var(--px-teal)">
+      <h4>1. APIトークン作成</h4>
+      <p>Proxmox Web UI → Datacenter → Permissions → API Tokens → Add。<strong>Privilege Separation</strong>はオフ。</p>
+    </div>
+    <div class="px-card" style="border-top:3px solid var(--px-orange)">
+      <h4>2. Cloudflare Tunnel</h4>
+      <p>Proxmox APIポート(8006)をCloudflare Tunnelで公開。<code>noTLSVerify: true</code>で自己署名証明書対応。</p>
+    </div>
+    <div class="px-card" style="border-top:3px solid var(--px-green)">
+      <h4>3. MCP接続</h4>
+      <p>Claude.ai → Settings → Connect Apps → Add Integration にエンドポイントURLを入力。</p>
+    </div>
+  </div>
+
+  <h4 style="margin:32px 0 12px;font-size:15px">Claude.ai (Web)</h4>
+  <div class="px-code"><code>https://proxmox-mcp-server.vercel.app/api/mcp?key=YOUR_MCP_API_KEY</code></div>
+
+  <h4 style="margin:24px 0 12px;font-size:15px">Claude Desktop / Cursor / VS Code</h4>
+  <div class="px-code"><code>{
+  "mcpServers": {
+    "proxmox": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://proxmox-mcp-server.vercel.app/api/mcp"],
+      "env": {
+        "HEADER_Authorization": "Bearer YOUR_MCP_API_KEY"
+      }
+    }
+  }
+}</code></div>
+</section>
+
+<div class="px-divider"></div>
+
+<!-- Security -->
+<section class="px-section" id="security">
+  <div class="px-section__label">⬡ SECURITY</div>
+  <h2 class="px-section__title">セキュリティ設計</h2>
+  <div class="px-grid" style="margin-top:24px">
+    <div class="px-card">
+      <h4>ポート開放不要</h4>
+      <p>Cloudflare Tunnel経由。Proxmoxサーバーへの直接アクセスは不可。外部からのポートスキャンも無効。</p>
+    </div>
+    <div class="px-card">
+      <h4>2層認証</h4>
+      <p>MCPレイヤーでAPIキー認証 + ProxmoxレイヤーでPVE APIトークン。どちらか一方が漏洩しても不正操作不可。</p>
+    </div>
+    <div class="px-card">
+      <h4>ステートレス</h4>
+      <p>サーバーにDBなし。トークンはVercel環境変数で管理。リクエスト処理中にのみ使用。ログ出力なし。</p>
+    </div>
+    <div class="px-card">
+      <h4>全通信TLS暗号化</h4>
+      <p>Claude → Vercel → Cloudflare → Proxmox。全経路がHTTPS。平文通信は一切なし。</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:64px 24px">
+  <div class="px-cta">
+    <h2>今すぐ始める</h2>
+    <p>Proxmoxクラスタをお持ちなら、5分で接続できます。</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="https://github.com/DaisukeHori/proxmox-mcp-server" class="px-btn px-btn--primary" target="_blank">GitHub →</a>
+      <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FDaisukeHori%2Fproxmox-mcp-server&env=PROXMOX_BASE_URL%2CPROXMOX_TOKEN_ID%2CPROXMOX_TOKEN_SECRET%2CPROXMOX_DEFAULT_NODE%2CMCP_API_KEY" class="px-btn px-btn--dark" target="_blank">Deploy with Vercel</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="px-footer">
+  <p>Proxmox MCP Server — Built by <a href="https://github.com/DaisukeHori" target="_blank">Daisuke Hori</a> / MIT License</p>
+  <p style="margin-top:8px">Next.js 15 / TypeScript / mcp-handler / MCP SDK / Zod / Vitest / Vercel / Cloudflare Tunnel</p>
+</footer>
+
+<script>
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'コピー済み';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+// Fade in observer
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }});
+}, { threshold: 0.1 });
+document.querySelectorAll('.px-fade').forEach(el => obs.observe(el));
+document.getElementById('hero-fade')?.classList.add('visible');
+</script>
+</body>
+</html>
